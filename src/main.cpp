@@ -2,6 +2,9 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
+#include "renderer.h"
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
 
  int byteswap(unsigned int startNum) {
@@ -23,8 +26,6 @@
      // program counter
      unsigned short proCou;
      // screen
-     unsigned char disp[64 * 32];
-     std::memset(disp, 0, sizeof(disp));
      // open rom file
      unsigned short stack[16];
      unsigned short sp = 0;
@@ -64,26 +65,15 @@
     proCou = 0x200; //start program counter at rom region
     I = 0;
     //byteswap instructions in memory
-    while (true) {
+    renderer::init();
+    bool quit = false;
+    SDL_Event e;
+    while (!quit) {
+        for (int f = 0; f<256; f++) {
         int instr = 0;
         int* instr_ptr = &instr;
         std::memcpy(instr_ptr, &memory[proCou], 2);
         int opcode = byteswap(instr);
-        //printf("opcode 0x%X\n", opcode);
-        //printf("PrCo %X\n", proCou);
-        /*if (proCou == 0x33D) {
-        for (int y = 0; y < 32; y++) {
-                    for (int x = 0; x < 64; x++) {
-                        if (disp[64 * y + x ] == 0){
-                        std::printf("  ");
-                        } else {
-                            std::printf("[]");
-                        }
-                    }
-                    std::printf("\n");
-                }
-                exit(0);
-        }*/
         proCou = proCou+2;
         switch (opcode & 0xF000) {
             case 0x0000:
@@ -100,7 +90,7 @@
                     //exit(0);
             } else {
                 //clear screen
-                std::memset(disp, 0, sizeof(disp));
+                renderer::cldisp();
                 printf("clear screen\n");
             }
             break;
@@ -122,22 +112,10 @@
             for (int n = 0; n < (opcode & 0xF); n++) {
                 for (int s = 0; s < 8; s++){
                     int xInd = vReg[(opcode >> 8) & 0x0F]+ s;
-                    int yInd = (vReg[(opcode >> 4) & 0x00F]+n)*64;
+                    int yInd = vReg[(opcode >> 4) & 0x00F]+n;
                     unsigned char bitDex = (memory[I+n] >> (7-s)) & 1;
-                    disp[xInd + yInd] ^= bitDex;
-                    //printf("%u", bitDex);
+                    renderer::draw(xInd,yInd,bitDex);
                 }
-                //printf("\n");
-                /*for (int y = 0; y < 32; y++) {
-                    for (int x = 0; x < 64; x++) {
-                        if (disp[64 * y + x ] == 0){
-                        std::printf("  ");
-                        } else {
-                            std::printf("[]");
-                        }
-                    }
-                    std::printf("\n");
-                }*/
             }
             
             break;
@@ -251,30 +229,24 @@
             break;
             case 0x1000:
             //jump to address
-            if (((proCou - 2) & 0x0FFF) == (opcode & 0x0FFF) ) {
-                printf("end of rom\n");
-
-                for (int y = 0; y < 32; y++) {
-                    for (int x = 0; x < 64; x++) {
-                        if (disp[64 * y + x ] == 0){
-                        std::printf("  ");
-                        } else {
-                            std::printf("[]");
-                        }
-                    }
-                    std::printf("\n");
-                }
-
-                exit(0);
-            }
             proCou = opcode & 0x0FFF;
             //printf ("jump to %X \n", opcode & 0x0FFF);
             break;
             default:
             printf("unimplemented instruction: %04X at %04X\n", opcode, proCou - 2);
+            renderer::close();
             exit(0);
         }
+        }
+
+        while ( SDL_PollEvent( &e ) != 0 ) {
+            if ( e.type == SDL_QUIT ) {
+                quit = true;
+            }
+        }
+        renderer::refresh();
     }
+    renderer::close();
     printf("done");
     return 0;
  }
