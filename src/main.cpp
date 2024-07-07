@@ -165,6 +165,13 @@
                         vReg[15] = 0;
                     }
                     vReg[(opcode >> 8) & 0x0F] = vReg[(opcode >> 8) & 0x0F] - vReg[(opcode >> 4) & 0x00F];
+                } else if ((opcode & 0x000F) == 0x0007) {
+                    if (vReg[ vReg[(opcode >> 4) & 0x00F] >= vReg[(opcode >> 8) & 0x0F]])  {
+                        vReg[15] = 1;
+                    } else {
+                        vReg[15] = 0;
+                    }
+                    vReg[(opcode >> 8) & 0x0F] = vReg[(opcode >> 4) & 0x00F] - vReg[(opcode >> 8) & 0x0F];
                 } else if ((opcode & 0x000F) == 0x0006) { 
                     //early chip 8 behavior uses this line
                     //vReg[(opcode >> 8) & 0x0F] = vReg[(opcode >> 4) & 0x00F];
@@ -191,6 +198,9 @@
                 } else if ((opcode & 0x000F) == 0x0003) {
                     //XORcompare vx and vy, store in vx
                     vReg[(opcode >> 8) & 0x0F] ^= vReg[(opcode >> 4) & 0x00F];
+                } else if ((opcode & 0x000F) == 0x0001) {
+                    //ORcompare vx and vy, store in vx
+                    vReg[(opcode >> 8) & 0x0F] |= vReg[(opcode >> 4) & 0x00F];
                 } else if ((opcode & 0x000F) == 0x0002) {
                     // "&" compare vx and vy, store in vx
                     vReg[(opcode >> 8) & 0x0F] &= vReg[(opcode >> 4) & 0x00F];
