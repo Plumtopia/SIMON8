@@ -279,6 +279,6 @@
         }
     }
     renderer::close();
-    printf("done");
+    printf("SIMON8 has finished running\n");
     return 0;
  }
