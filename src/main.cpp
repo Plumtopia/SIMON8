@@ -5,6 +5,8 @@
 #include "renderer.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <chrono>
+#include <thread>
 
 
  int byteswap(unsigned int startNum) {
@@ -15,7 +17,11 @@
         return clean;
  }
  int main(int argc, char **argv) {
+    using namespace std::this_thread;     // sleep_for, sleep_until
+    using namespace std::chrono_literals; // ns, us, ms, s, h, etc.
+    using std::chrono::system_clock;
     srand(0);
+    renderer::cldisp();
      // store current opcode
      // memory
      unsigned char memory[4096];
@@ -29,10 +35,15 @@
      // open rom file
      unsigned short stack[16];
      unsigned short sp = 0;
+     unsigned int DelTimer = 0;
     for (int i = 1; i < argc; i++) {
         printf("loading file: %s\n", argv[i]);
     }
     FILE *file = std::fopen(argv[1], "rb");
+    if (file == NULL) {
+        printf("ERROR: invalid file or path!!\nUsage: './SIMON8 /path/to/rom' \n");
+        exit(0);
+    }
     // get size of rom file
     std::fseek(file, 0, SEEK_END);
     const int fileSize = std::ftell(file);
@@ -178,8 +189,11 @@
                     }
                     vReg[(opcode >> 8) & 0x0F] = carry & 0xFF;
                 } else if ((opcode & 0x000F) == 0x0003) {
-                    //compare vx and vy, store in vx
+                    //XORcompare vx and vy, store in vx
                     vReg[(opcode >> 8) & 0x0F] ^= vReg[(opcode >> 4) & 0x00F];
+                } else if ((opcode & 0x000F) == 0x0002) {
+                    // "&" compare vx and vy, store in vx
+                    vReg[(opcode >> 8) & 0x0F] &= vReg[(opcode >> 4) & 0x00F];
                 } else {
                     printf("unimplemented instruction: %04X at %04X\n", opcode, proCou - 2);
                     exit(0);        
@@ -216,6 +230,10 @@
 
                 } else if ((opcode & 0x00FF) == 0x0029) {
                     I = 0x50 + 5 * vReg[(opcode >> 8) & 0x0F];
+                } else if ((opcode & 0x00FF) == 0x0015) {
+                    DelTimer = vReg[(opcode >> 8) & 0x0F];
+                } else if ((opcode & 0x00FF) == 0x0007) {
+                    vReg[(opcode >> 8) & 0x0F] = DelTimer;
                 } else {
                     printf("unimplemented instruction: %04X at %04X\n", opcode, proCou - 2);
                     exit(0);        
@@ -245,6 +263,10 @@
             }
         }
         renderer::refresh();
+        if (DelTimer != 0) {
+            DelTimer--;
+            sleep_for(5ms);
+        }
     }
     renderer::close();
     printf("done");

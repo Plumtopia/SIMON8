@@ -38,7 +38,9 @@ bool init() {
     	if ( SDL_Init( SDL_INIT_VIDEO ) < 0 ) {
 		printf( "Could not initialize SDL. SDL Error: %s\n", SDL_GetError() );
 		success = false;
-	} else {
+	} if ( !SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1")) {
+            printf("Warning: Vsync is not enabled");
+        } else {
         if (SDL_CreateWindowAndRenderer(xmax, ymax, 0, &SimonWind, &SimonRend) < 0) {
             printf("Failed to create window and renderer\n");
             exit(0);
