@@ -25,6 +25,8 @@ void cldisp () {
     }
 }
 bool draw(int x, int y, char b) {
+    x &= 63;
+    y &= 31;
     bool doot = false;
     if ((disp[x + (y * 64)] == 1) & (b == 1)) {
         doot = true;
@@ -37,9 +39,6 @@ bool init() {
 		printf( "Could not initialize SDL. SDL Error: %s\n", SDL_GetError() );
 		success = false;
 	} else {
-		if ( !SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "1" ) ) {
-			printf( "Linear filtering not enabled.\n" );
-		    }
         if (SDL_CreateWindowAndRenderer(xmax, ymax, 0, &SimonWind, &SimonRend) < 0) {
             printf("Failed to create window and renderer\n");
             exit(0);
@@ -56,7 +55,7 @@ bool init() {
 }
 
 void refresh () {
-    int pitch = (64 * 32) * 4;
+    int pitch = (64 * 4);
     for (int p = 0; p < (64 * 32); p++) {
         if (disp[p] == 1) {
             framebuffer[p] = 0xFFFFFFFF;
