@@ -37,6 +37,7 @@
      unsigned short stack[16];
      unsigned short sp = 0;
      unsigned int DelTimer = 0;
+     unsigned int SoundTimer = 0;
      const uint8_t *keyState = SDL_GetKeyboardState(NULL);
      bool nokeys = true;
     for (int i = 1; i < argc; i++) {
@@ -260,6 +261,8 @@
                     I = 0x50 + 5 * vReg[(opcode >> 8) & 0x0F];
                 } else if ((opcode & 0x00FF) == 0x0015) {
                     DelTimer = vReg[(opcode >> 8) & 0x0F];
+                } else if ((opcode & 0x00FF) == 0x0018) {
+                    SoundTimer = vReg[(opcode >> 8) & 0x0F];
                 } else if ((opcode & 0x00FF) == 0x0007) {
                     vReg[(opcode >> 8) & 0x0F] = DelTimer;
                 } else if((opcode & 0x00FF) == 0x000A){
@@ -306,6 +309,10 @@
             //jump to address
             proCou = opcode & 0x0FFF;
             //printf ("jump to %X \n", opcode & 0x0FFF);
+            break;
+            case 0xB000:
+            //jump to address
+            proCou = (opcode & 0x0FFF) + vReg[0];
             break;
             default:
             printf("unimplemented instruction: %04X at %04X\n", opcode, proCou - 2);
@@ -378,7 +385,11 @@
         renderer::refresh();
         if (DelTimer != 0) {
             DelTimer--;
-            sleep_for(5ms);
+            sleep_for(16ms);
+        }
+        if (SoundTimer != 0) {
+            SoundTimer--;
+        
         }
     }
     renderer::close();
