@@ -159,42 +159,52 @@
                 {
                     vReg[(opcode >> 8) & 0x0F] = vReg[(opcode >> 4) & 0x00F];
                 } else if ((opcode & 0x000F) == 0x0005) {
+                    int flag = 0;
                     if (vReg[(opcode >> 8) & 0x0F] >= vReg[(opcode >> 4) & 0x00F]) {
-                        vReg[15] = 1;
+                        flag = 1;
                     } else {
-                        vReg[15] = 0;
+                        flag = 0;
                     }
                     vReg[(opcode >> 8) & 0x0F] = vReg[(opcode >> 8) & 0x0F] - vReg[(opcode >> 4) & 0x00F];
+                    vReg[15] = flag;
                 } else if ((opcode & 0x000F) == 0x0007) {
-                    if (vReg[ vReg[(opcode >> 4) & 0x00F] >= vReg[(opcode >> 8) & 0x0F]])  {
-                        vReg[15] = 1;
+                    int flag = 0;
+                    if (vReg[(opcode >> 4) & 0x00F] >= vReg[(opcode >> 8) & 0x0F])  {
+                        flag = 1;
                     } else {
-                        vReg[15] = 0;
+                        flag = 0;
                     }
                     vReg[(opcode >> 8) & 0x0F] = vReg[(opcode >> 4) & 0x00F] - vReg[(opcode >> 8) & 0x0F];
+                    vReg[15] = flag;
                 } else if ((opcode & 0x000F) == 0x0006) { 
                     //early chip 8 behavior uses this line
+                    int flag = 0;
                     //vReg[(opcode >> 8) & 0x0F] = vReg[(opcode >> 4) & 0x00F];
                     //VF = least significant bit of Vx
-                    vReg[15] = vReg[(opcode >> 8) & 0x0F] & 1;
+                    flag = vReg[(opcode >> 8) & 0x0F] & 1;
                     // Vx = Vx SHR 1
                     vReg[(opcode >> 8) & 0x0F] >>= 1;
+                    vReg[15] = flag;
                 } else if ((opcode & 0x000F) == 0x000E) {
                     //early chip 8 behavior uses this line
                     //vReg[(opcode >> 8) & 0x0F] = vReg[(opcode >> 4) & 0x00F];
+                    int flag = 0;
                     //VF = most significant bit of Vx
-                    vReg[15] = (vReg[(opcode >> 8) & 0x0F] >> 7) & 1;
+                    flag = (vReg[(opcode >> 8) & 0x0F] >> 7) & 1;
                     // Vx = Vx SHL 1
                     vReg[(opcode >> 8) & 0x0F] <<= 1;
+                    vReg[15] = flag;
                 } else if ((opcode & 0x000F) == 0x0004) {
                     //add vx and vy, if greater than 8 bits, set vf to 1, store lowest 8 bits in vx
                     int carry = (int) vReg[(opcode >> 8) & 0x0F] + (int) vReg[(opcode >> 4) & 0x00F];
+                    int flag = 0;
                     if (carry > 0xFF){
-                        vReg[15] = 1;
+                        flag = 1;
                     } else {
-                        vReg[15] = 0;
+                        flag = 0;
                     }
                     vReg[(opcode >> 8) & 0x0F] = carry & 0xFF;
+                    vReg[15] = flag;
                 } else if ((opcode & 0x000F) == 0x0003) {
                     //XORcompare vx and vy, store in vx
                     vReg[(opcode >> 8) & 0x0F] ^= vReg[(opcode >> 4) & 0x00F];
