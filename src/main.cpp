@@ -8,13 +8,24 @@
 #include <chrono>
 #include <thread>
 
-
+    bool quit = false;
+    SDL_Event e;
  int byteswap(unsigned int startNum) {
         unsigned int a = startNum << 8;
         unsigned int b = startNum >> 8;
         unsigned int endNum = a | b;
         unsigned int clean = endNum & 0xFFFF;
         return clean;
+ }
+ int eventpoll(){
+            const uint8_t *keyState = SDL_GetKeyboardState(NULL);
+            while ( SDL_PollEvent( &e ) != 0 ) {
+            if ( e.type == SDL_QUIT ) {
+                quit = true;
+            } else if ( e.type == SDL_KEYDOWN ) {
+                //do stuff
+            }
+        }
  }
  int main(int argc, char **argv) {
     using namespace std::this_thread;     // sleep_for, sleep_until
@@ -82,8 +93,6 @@
     I = 0;
     //byteswap instructions in memory
     renderer::init();
-    bool quit = false;
-    SDL_Event e;
     while (!quit) {
         for (int f = 0; f<256; f++) {
         int instr = 0;
@@ -285,11 +294,7 @@
         }
         }
 
-        while ( SDL_PollEvent( &e ) != 0 ) {
-            if ( e.type == SDL_QUIT ) {
-                quit = true;
-            }
-        }
+        eventpoll();
         renderer::refresh();
         if (DelTimer != 0) {
             DelTimer--;
