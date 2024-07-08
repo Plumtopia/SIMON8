@@ -266,13 +266,23 @@
                     //wait for key press. vX = key press
                     if(nokeys == false){
                     for(int x= 0; x > 15; x++) {
-                        if (keypad[x] == 1) {vReg[(opcode >> 8) & 0x0F] = x;} else
-                        printf("%b", keypad[x]);
+                        if (keypad[x] == 1) {vReg[(opcode >> 8) & 0x0F] = x;}
                         }
                     } else {proCou = proCou -2;}
                 } else {
                     printf("unimplemented instruction: %04X at %04X\n", opcode, proCou - 2);
                     exit(0);        
+                }
+            break;
+            case 0xE000:
+                if ((opcode & 0x00FF) == 0x009E) {
+                    for(int x= 0; x > 15; x++) {
+                        if (vReg[(opcode >> 8) & 0x0F] == x) {
+                            if (keypad[x] == 1) {
+                                proCou += 2;
+                                }
+                        }
+                    }
                 }
             break;
             case 0x2000:
@@ -351,6 +361,7 @@
                     keypad[0xF] = 1;
                     nokeys = false;
                 }
+                sleep_for(300ms);
             }
         }
         renderer::refresh();
