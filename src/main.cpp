@@ -285,9 +285,12 @@
         }
         }
 
+        const uint8_t *keyState = SDL_GetKeyboardState(NULL);
         while ( SDL_PollEvent( &e ) != 0 ) {
             if ( e.type == SDL_QUIT ) {
                 quit = true;
+            } else if ( e.type == SDL_KEYDOWN ) {
+                //do stuff
             }
         }
         renderer::refresh();
