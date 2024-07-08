@@ -276,7 +276,7 @@
             break;
             case 0xE000:
                 if ((opcode & 0x00FF) == 0x009E) {
-                    for(int x= 0; x > 15; x++) {
+                    for(int x= 0; x <= 15; x++) {
                         if (vReg[(opcode >> 8) & 0x0F] == x) {
                             if (keypad[x] == 1) {
                                 proCou += 2;
@@ -284,7 +284,7 @@
                         }
                     }
                 } else if ((opcode & 0x00FF) == 0x00A1) {
-                    for(int x= 0; x > 15; x++) {
+                    for(int x= 0; x <= 15; x++) {
                         if (vReg[(opcode >> 8) & 0x0F] == x) {
                             if (keypad[x] == 0) {
                                 proCou += 2;
