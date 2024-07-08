@@ -47,6 +47,11 @@
     // get size of rom file
     std::fseek(file, 0, SEEK_END);
     const int fileSize = std::ftell(file);
+        if (fileSize >  3584) {
+            printf("ERROR: file is too large (%d bytes)\nMaximum size is 3.5KB!\n", fileSize);
+            exit(0);
+        }
+        
     std::printf("file size: %d bytes\n", fileSize);
     std::fseek(file, 0, SEEK_SET);
     // load rom file into memory
@@ -254,6 +259,9 @@
                     DelTimer = vReg[(opcode >> 8) & 0x0F];
                 } else if ((opcode & 0x00FF) == 0x0007) {
                     vReg[(opcode >> 8) & 0x0F] = DelTimer;
+                } else if((opcode & 0x00FF) == 0x000A){
+                    //wait for key press. vX = key press
+                    vReg[(opcode >> 8) & 0x0F] = 1;
                 } else {
                     printf("unimplemented instruction: %04X at %04X\n", opcode, proCou - 2);
                     exit(0);        
