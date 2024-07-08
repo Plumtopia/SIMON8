@@ -60,9 +60,9 @@ void refresh () {
     int pitch = (64 * 4);
     for (int p = 0; p < (64 * 32); p++) {
         if (disp[p] == 1) {
-            framebuffer[p] = 0xFFFFFFFF;
+            framebuffer[p] = 0x00FF7F00;
         } else {
-            framebuffer[p] = 0x00000000;
+            framebuffer[p] = 0x00080100;
         }
     }
     SDL_UpdateTexture(SimScreen, NULL, framebuffer, pitch);
