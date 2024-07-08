@@ -283,6 +283,17 @@
                                 }
                         }
                     }
+                } else if ((opcode & 0x00FF) == 0x00A1) {
+                    for(int x= 0; x > 15; x++) {
+                        if (vReg[(opcode >> 8) & 0x0F] == x) {
+                            if (keypad[x] == 0) {
+                                proCou += 2;
+                                }
+                        }
+                    }
+                } else {
+                    printf("unimplemented instruction: %04X at %04X\n", opcode, proCou - 2);
+                    exit(0);        
                 }
             break;
             case 0x2000:
@@ -361,7 +372,7 @@
                     keypad[0xF] = 1;
                     nokeys = false;
                 }
-                sleep_for(300ms);
+                
             }
         }
         renderer::refresh();
