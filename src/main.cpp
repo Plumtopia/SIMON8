@@ -16,6 +16,7 @@
         unsigned int clean = endNum & 0xFFFF;
         return clean;
  }
+ bool keypad[16];
  int main(int argc, char **argv) {
     using namespace std::this_thread;     // sleep_for, sleep_until
     using namespace std::chrono_literals; // ns, us, ms, s, h, etc.
@@ -36,6 +37,8 @@
      unsigned short stack[16];
      unsigned short sp = 0;
      unsigned int DelTimer = 0;
+     const uint8_t *keyState = SDL_GetKeyboardState(NULL);
+     bool nokeys = true;
     for (int i = 1; i < argc; i++) {
         printf("loading file: %s\n", argv[i]);
     }
@@ -261,7 +264,12 @@
                     vReg[(opcode >> 8) & 0x0F] = DelTimer;
                 } else if((opcode & 0x00FF) == 0x000A){
                     //wait for key press. vX = key press
-                    vReg[(opcode >> 8) & 0x0F] = 1;
+                    if(nokeys == false){
+                    for(int x= 0; x > 15; x++) {
+                        if (keypad[x] == 1) {vReg[(opcode >> 8) & 0x0F] = x;} else
+                        printf("%b", keypad[x]);
+                        }
+                    } else {proCou = proCou -2;}
                 } else {
                     printf("unimplemented instruction: %04X at %04X\n", opcode, proCou - 2);
                     exit(0);        
@@ -285,12 +293,64 @@
         }
         }
 
-        const uint8_t *keyState = SDL_GetKeyboardState(NULL);
+        for (int x=0; x < 16; x++) {
+            keypad[x] = 0;
+        }
+        keyState = SDL_GetKeyboardState(NULL);
+        nokeys = true;
         while ( SDL_PollEvent( &e ) != 0 ) {
             if ( e.type == SDL_QUIT ) {
                 quit = true;
             } else if ( e.type == SDL_KEYDOWN ) {
-                //do stuff
+                if (keyState[SDL_GetScancodeFromKey(SDLK_1)] != 0) {
+                    keypad[0x1] = 1;
+                    nokeys = false;
+                } else if (keyState[SDL_GetScancodeFromKey(SDLK_2)] != 0) {
+                    keypad[0x2] = 1;
+                    nokeys = false;
+                } else if (keyState[SDL_GetScancodeFromKey(SDLK_3)] != 0) {
+                    keypad[0x3] = 1;
+                    nokeys = false;
+                } else if (keyState[SDL_GetScancodeFromKey(SDLK_4)] != 0) {
+                    keypad[0xC] = 1;
+                    nokeys = false;
+                } else if (keyState[SDL_GetScancodeFromKey(SDLK_q)] != 0) {
+                    keypad[0x4] = 1;
+                    nokeys = false;
+                } else if (keyState[SDL_GetScancodeFromKey(SDLK_w)] != 0) {
+                    keypad[0x5] = 1;
+                    nokeys = false;
+                } else if (keyState[SDL_GetScancodeFromKey(SDLK_e)] != 0) {
+                    keypad[0x6] = 1;
+                    nokeys = false;
+                } else if (keyState[SDL_GetScancodeFromKey(SDLK_r)] != 0) {
+                    keypad[0xD] = 1;
+                    nokeys = false;
+                } else if (keyState[SDL_GetScancodeFromKey(SDLK_a)] != 0) {
+                    keypad[0x7] = 1;
+                    nokeys = false;
+                } else if (keyState[SDL_GetScancodeFromKey(SDLK_s)] != 0) {
+                    keypad[0x8] = 1;
+                    nokeys = false;
+                } else if (keyState[SDL_GetScancodeFromKey(SDLK_d)] != 0) {
+                    keypad[0x9] = 1;
+                    nokeys = false;
+                } else if (keyState[SDL_GetScancodeFromKey(SDLK_f)] != 0) {
+                    keypad[0xE] = 1;
+                    nokeys = false;
+                } else if (keyState[SDL_GetScancodeFromKey(SDLK_z)] != 0) {
+                    keypad[0xA] = 1;
+                    nokeys = false;
+                } else if (keyState[SDL_GetScancodeFromKey(SDLK_x)] != 0) {
+                    keypad[0x0] = 1;
+                    nokeys = false;
+                } else if (keyState[SDL_GetScancodeFromKey(SDLK_c)] != 0) {
+                    keypad[0xB] = 1;
+                    nokeys = false;
+                } else if (keyState[SDL_GetScancodeFromKey(SDLK_v)] != 0) {
+                    keypad[0xF] = 1;
+                    nokeys = false;
+                }
             }
         }
         renderer::refresh();
