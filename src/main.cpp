@@ -7,6 +7,7 @@
 #include <SDL2/SDL_image.h>
 #include <chrono>
 #include <thread>
+#include <string.h>
 
 
  int byteswap(unsigned int startNum) {
@@ -38,16 +39,30 @@
      unsigned short sp = 0;
      unsigned int DelTimer = 0;
      unsigned int SoundTimer = 0;
+     int proSpeed;
+     const char *sSpeed = argv[2];
      const uint8_t *keyState = SDL_GetKeyboardState(NULL);
      bool nokeys = true;
     for (int i = 1; i < argc; i++) {
+        if (i == 1) {
         printf("loading file: %s\n", argv[i]);
+        } else if (i == 2) {
+            printf("speed: %s\n", argv[i]);
+        }
+        
     }
     FILE *file = std::fopen(argv[1], "rb");
     if (file == NULL) {
-        printf("ERROR: invalid file or path!!\nUsage: './SIMON8 /path/to/rom' \n");
+        printf("ERROR: invalid file or path!!\nUsage: './SIMON8 /path/to/rom SPEED' \n");
         exit(0);
     }
+    if (strcmp(sSpeed, "FAST") == 0) { proSpeed = 256;}
+    else if (strcmp(sSpeed, "SLOW") == 0) { proSpeed = 10;}
+    else {
+        printf("ERROR:  please enter a speed (FAST = 256 instructions per frame, SLOW  = 10 instructions per frame)\n");
+        exit(0);
+    }
+    
     // get size of rom file
     std::fseek(file, 0, SEEK_END);
     const int fileSize = std::ftell(file);
@@ -89,7 +104,129 @@
     bool quit = false;
     SDL_Event e;
     while (!quit) {
-        for (int f = 0; f<256; f++) {
+        nokeys = true;
+        while ( SDL_PollEvent( &e ) != 0 ) {
+            switch (e.type) {
+            case SDL_QUIT:
+                quit = true;
+                break;
+            case SDL_KEYDOWN:
+            nokeys = false;
+            switch (e.key.keysym.sym) {
+                case SDLK_1:
+                keypad[0x1] = 1;
+                break;
+                case SDLK_2:
+                keypad[0x2] = 1;
+                break;
+                case SDLK_3:
+                keypad[0x3] = 1;
+                break;
+                case SDLK_4:
+                keypad[0xC] = 1;
+                break;
+                case SDLK_q:
+                keypad[0x4] = 1;
+                break;
+                case SDLK_w:
+                keypad[0x5] = 1;
+                break;
+                case SDLK_e:
+                keypad[0x6] = 1;
+                break;
+                case SDLK_r:
+                keypad[0xD] = 1;
+                break;
+                case SDLK_a:
+                keypad[0x7] = 1;
+                break;
+                case SDLK_s:
+                keypad[0x8] = 1;
+                break;
+                case SDLK_d:
+                keypad[0x9] = 1;
+                break;
+                case SDLK_f:
+                keypad[0xE] = 1;
+                break;
+                case SDLK_z:
+                keypad[0xA] = 1;
+                break;
+                case SDLK_x:
+                keypad[0x0] = 1;
+                break;
+                case SDLK_c:
+                keypad[0xB] = 1;
+                break;
+                case SDLK_v:
+                keypad[0xF] = 1;
+                break;
+                default:
+                //stuff
+                break;
+            }
+            break;
+            case SDL_KEYUP:
+            switch (e.key.keysym.sym) {
+                case SDLK_1:
+                keypad[0x1] = 0;
+                break;
+                case SDLK_2:
+                keypad[0x2] = 0;
+                break;
+                case SDLK_3:
+                keypad[0x3] = 0;
+                break;
+                case SDLK_4:
+                keypad[0xC] = 0;
+                break;
+                case SDLK_q:
+                keypad[0x4] = 0;
+                break;
+                case SDLK_w:
+                keypad[0x5] = 0;
+                break;
+                case SDLK_e:
+                keypad[0x6] = 0;
+                break;
+                case SDLK_r:
+                keypad[0xD] = 0;
+                break;
+                case SDLK_a:
+                keypad[0x7] = 0;
+                break;
+                case SDLK_s:
+                keypad[0x8] = 0;
+                break;
+                case SDLK_d:
+                keypad[0x9] = 0;
+                break;
+                case SDLK_f:
+                keypad[0xE] = 0;
+                break;
+                case SDLK_z:
+                keypad[0xA] = 0;
+                break;
+                case SDLK_x:
+                keypad[0x0] = 0;
+                break;
+                case SDLK_c:
+                keypad[0xB] = 0;
+                break;
+                case SDLK_v:
+                keypad[0xF] = 0;
+                break;
+                default:
+                //stuff
+                break;
+            }
+            break;
+            default:
+            //stuff
+                break;
+            }
+        }
+        for (int f = 0; f < proSpeed; f++) {
         int instr = 0;
         int* instr_ptr = &instr;
         std::memcpy(instr_ptr, &memory[proCou], 2);
@@ -134,7 +271,8 @@
                     int xInd = vReg[(opcode >> 8) & 0x0F]+ s;
                     int yInd = vReg[(opcode >> 4) & 0x00F]+n;
                     unsigned char bitDex = (memory[I+n] >> (7-s)) & 1;
-                    renderer::draw(xInd,yInd,bitDex);
+                    //renderer::draw(xInd,yInd,bitDex);
+                    if (renderer::draw(xInd,yInd,bitDex) == true) {vReg[15] = 1;}
                 }
             }
             
@@ -321,71 +459,12 @@
         }
         }
 
-        for (int x=0; x < 16; x++) {
-            keypad[x] = 0;
-        }
-        keyState = SDL_GetKeyboardState(NULL);
-        nokeys = true;
-        while ( SDL_PollEvent( &e ) != 0 ) {
-            if ( e.type == SDL_QUIT ) {
-                quit = true;
-            } else if ( e.type == SDL_KEYDOWN ) {
-                if (keyState[SDL_GetScancodeFromKey(SDLK_1)] != 0) {
-                    keypad[0x1] = 1;
-                    nokeys = false;
-                } if (keyState[SDL_GetScancodeFromKey(SDLK_2)] != 0) {
-                    keypad[0x2] = 1;
-                    nokeys = false;
-                } if (keyState[SDL_GetScancodeFromKey(SDLK_3)] != 0) {
-                    keypad[0x3] = 1;
-                    nokeys = false;
-                } if (keyState[SDL_GetScancodeFromKey(SDLK_4)] != 0) {
-                    keypad[0xC] = 1;
-                    nokeys = false;
-                } if (keyState[SDL_GetScancodeFromKey(SDLK_q)] != 0) {
-                    keypad[0x4] = 1;
-                    nokeys = false;
-                } if (keyState[SDL_GetScancodeFromKey(SDLK_w)] != 0) {
-                    keypad[0x5] = 1;
-                    nokeys = false;
-                } if (keyState[SDL_GetScancodeFromKey(SDLK_e)] != 0) {
-                    keypad[0x6] = 1;
-                    nokeys = false;
-                } if (keyState[SDL_GetScancodeFromKey(SDLK_r)] != 0) {
-                    keypad[0xD] = 1;
-                    nokeys = false;
-                } if (keyState[SDL_GetScancodeFromKey(SDLK_a)] != 0) {
-                    keypad[0x7] = 1;
-                    nokeys = false;
-                } if (keyState[SDL_GetScancodeFromKey(SDLK_s)] != 0) {
-                    keypad[0x8] = 1;
-                    nokeys = false;
-                } if (keyState[SDL_GetScancodeFromKey(SDLK_d)] != 0) {
-                    keypad[0x9] = 1;
-                    nokeys = false;
-                } if (keyState[SDL_GetScancodeFromKey(SDLK_f)] != 0) {
-                    keypad[0xE] = 1;
-                    nokeys = false;
-                } if (keyState[SDL_GetScancodeFromKey(SDLK_z)] != 0) {
-                    keypad[0xA] = 1;
-                    nokeys = false;
-                } if (keyState[SDL_GetScancodeFromKey(SDLK_x)] != 0) {
-                    keypad[0x0] = 1;
-                    nokeys = false;
-                } if (keyState[SDL_GetScancodeFromKey(SDLK_c)] != 0) {
-                    keypad[0xB] = 1;
-                    nokeys = false;
-                } if (keyState[SDL_GetScancodeFromKey(SDLK_v)] != 0) {
-                    keypad[0xF] = 1;
-                    nokeys = false;
-                }
-                
-            }
-        }
+
+        
         renderer::refresh();
         if (DelTimer != 0) {
             DelTimer--;
-            sleep_for(16ms);
+            sleep_for(5ms);
         }
         if (SoundTimer != 0) {
             SoundTimer--;
