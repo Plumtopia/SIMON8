@@ -19,6 +19,14 @@
  }
  bool keypad[16];
  int main(int argc, char **argv) {
+    if (argv[1] == NULL) {
+        printf("ERROR:  please enter a file path and speed!\nUsage: './SIMON8 /path/to/rom SPEED(FAST/SLOW)' \n");
+        exit(0);
+    }
+    if (argv[2] == NULL) {
+        printf("ERROR:  please enter a file path and speed!\nUsage: './SIMON8 /path/to/rom SPEED(FAST/SLOW)' \n");
+        exit(0);
+    }
     using namespace std::this_thread;     // sleep_for, sleep_until
     using namespace std::chrono_literals; // ns, us, ms, s, h, etc.
     using std::chrono::system_clock;
@@ -45,7 +53,7 @@
      bool nokeys = true;
     for (int i = 1; i < argc; i++) {
         if (i == 1) {
-        printf("loading file: %s\n", argv[i]);
+            printf("loading file: %s\n", argv[i]);
         } else if (i == 2) {
             printf("speed: %s\n", argv[i]);
         }
@@ -53,7 +61,7 @@
     }
     FILE *file = std::fopen(argv[1], "rb");
     if (file == NULL) {
-        printf("ERROR: invalid file or path!!\nUsage: './SIMON8 /path/to/rom SPEED' \n");
+        printf("ERROR: invalid file or path!!\nUsage: './SIMON8 /path/to/rom SPEED(FAST/SLOW)' \n");
         exit(0);
     }
     if (strcmp(sSpeed, "FAST") == 0) { proSpeed = 256;}
